@@ -1,0 +1,8 @@
+num_players: 16
+num_rounds: 8
+include_teams:
+  - 'P01 P29'
+  - 'P05 P28'
+include_games:
+  - 'P01 P02 vs P03 P04'
+  - 'P06 P07 vs P19 P33'
