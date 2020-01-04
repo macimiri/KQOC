@@ -1,5 +1,6 @@
 from itertools import combinations
 from random import shuffle
+from random import choice
 import yaml
 import datetime
 
@@ -64,6 +65,37 @@ def create_tourny():
                 pass  # same players on opposite teams not possible
     print("Number of possible games: {}\n".format(str(len(all_possible_games))))
     # print(*all_possible_games, sep='\n')
+
+    removed_teams = [] # used to track removals
+    while(cfg['num_rounds'] and len(all_possible_teams)):
+        # choose a random team
+        team_1 = choice(all_possible_teams)
+        # temp remove other teams with duplicate players
+        temp_teams = all_possible_teams.copy()
+        temp_teams = [x for x in all_possible_teams if team_1.p1 not in x and team_1.p2 not in x]
+        # choose other team, create game.
+        # restore temp removals
+        # remove that team from all_teams
+        removed_teams.append(team_1)
+        all_possible_teams.remove(team_1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # randomly create rounds of games
     # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
