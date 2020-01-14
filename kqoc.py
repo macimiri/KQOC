@@ -39,10 +39,18 @@ class Team():
         return "(P{:02}, P{:02})".format(self.p1, self.p2)
 
     def __eq__(self, other):
+        """
+
+        :param other: a Team object to compare against
+        :return: True if players are identical
+        """
         return self.p1 in other and self.p2 in other
 
 
 def create_tourny():
+    """
+        read in the yaml, output tournament brackets
+    """
     with open("kqoc.yaml", 'r') as yml:
         cfg = yaml.load(yml, Loader=yaml.FullLoader)
 
@@ -53,6 +61,27 @@ def create_tourny():
     # list of team objects
     all_possible_teams = [Team(x, y) for x, y in combinations(players, 2)]
     print("Number of possible teams: " + str(len(all_possible_teams)))
+
+    temp_games = []
+    t_round_g = []
+    while (cfg['num_rounds'] and len(all_possible_teams)):
+        t_r = []
+        while (cfg['num_players'] // 4):
+            # choose team1
+            team1 = choice(all_possible_teams)
+            all_possible_teams.remove(team1)
+            # temp remove all teams with duplicate players
+            possible_opponents = [x for x in all_possible_teams if x.p1 not in team1 and x.p2 not in team1]
+            # choose team2
+            team2 = choice(possible_opponents)
+            all_possible_teams.remove(team2)
+            # create game
+            temp_game = Game(team1, team2)
+            #add to round
+            t_r.append(temp_game)
+            #decrement counter
+            cfg['num_rounds'] = cfg['num_rounds'] - 1
+        t_round_g.append(t_r)
 
     # list of game objects
     all_possible_games = []
@@ -66,18 +95,21 @@ def create_tourny():
     print("Number of possible games: {}\n".format(str(len(all_possible_games))))
     # print(*all_possible_games, sep='\n')
 
-    removed_teams = [] # used to track removals
+    removed_teams = []  # used to track removals
     while(cfg['num_rounds'] and len(all_possible_teams)):
-        # choose a random team
-        team_1 = choice(all_possible_teams)
-        # temp remove other teams with duplicate players
-        temp_teams = all_possible_teams.copy()
-        temp_teams = [x for x in all_possible_teams if team_1.p1 not in x and team_1.p2 not in x]
-        # choose other team, create game.
-        # restore temp removals
-        # remove that team from all_teams
-        removed_teams.append(team_1)
-        all_possible_teams.remove(team_1)
+        while (cfg['num_players'] // 4):
+            # choose a random team
+            team_1 = choice(all_possible_teams)
+            # temp remove other teams with duplicate players
+            temp_teams = all_possible_teams.copy()
+            temp_teams = [x for x in all_possible_teams if team_1.p1 not in x and team_1.p2 not in x]
+            # choose other team, create game.
+            # restore temp removals
+            # remove that team from all_teams
+            removed_teams.append(team_1)
+            all_possible_teams.remove(team_1)
+            #add to round
+            t_r.append()
 
 
 
