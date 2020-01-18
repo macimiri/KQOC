@@ -63,25 +63,33 @@ def create_tourny():
     print("Number of possible teams: " + str(len(all_possible_teams)))
 
     temp_games = []
-    t_round_g = []
-    while (cfg['num_rounds'] and len(all_possible_teams)):
-        t_r = []
-        while (cfg['num_players'] // 4):
-            # choose team1
-            team1 = choice(all_possible_teams)
+    tourney_rounds = []
+    while len(all_possible_teams):
+        round_games = []
+        possible_team1 = all_possible_teams.copy()
+        for x in range(cfg['num_players'] // 4):
+            # choose team1. team1 cannot contain any players that exist in round_games (games in this round)  # TODO
+            # possible_team1 = [x for x in all_possible_teams if ]
+            # possible_team1 = []
+            for x in all_possible_teams:
+                for y in round_games:
+                    # if x players not in round_games players, append to possible_team1
+                    if x.p1 in y.t1 or x.p2 in y.t1 or x.p1 in y.t2 or x.p2 in y.t2:
+                        possible_team1.remove(x)
+            team1 = choice(possible_team1)
             all_possible_teams.remove(team1)
-            # temp remove all teams with duplicate players
-            possible_opponents = [x for x in all_possible_teams if x.p1 not in team1 and x.p2 not in team1]
+            # team 2 cannot have any players that exist in round_games (games in this round) or team1  #TODO
+            possible_team2 = [x for x in possible_team1 if x.p1 not in team1 and x.p2 not in team1]
             # choose team2
-            team2 = choice(possible_opponents)
+            team2 = choice(possible_team2)
             all_possible_teams.remove(team2)
             # create game
             temp_game = Game(team1, team2)
             #add to round
-            t_r.append(temp_game)
+            round_games.append(temp_game)
             #decrement counter
             cfg['num_rounds'] = cfg['num_rounds'] - 1
-        t_round_g.append(t_r)
+        tourney_rounds.append(round_games)
 
     # list of game objects
     all_possible_games = []
@@ -109,7 +117,7 @@ def create_tourny():
             removed_teams.append(team_1)
             all_possible_teams.remove(team_1)
             #add to round
-            t_r.append()
+            round_games.append()
 
 
 
