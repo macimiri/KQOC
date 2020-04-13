@@ -1,4 +1,4 @@
-num_players: 8
+num_players: 4
 num_rounds: 4
 include_teams:
   - '(P01, P29)'

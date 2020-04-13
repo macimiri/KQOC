@@ -46,7 +46,6 @@ class Team():
         """
         return self.p1 in other and self.p2 in other
 
-
 def create_tourny():
     """
         read in the yaml, output tournament brackets
@@ -62,34 +61,45 @@ def create_tourny():
     all_possible_teams = [Team(x, y) for x, y in combinations(players, 2)]
     print("Number of possible teams: " + str(len(all_possible_teams)))
 
-    temp_games = []
     tourney_rounds = []
-    while len(all_possible_teams):
-        round_games = []
-        possible_team1 = all_possible_teams.copy()
+    while len(all_possible_teams) > 1:
+        single_round_games = []
         for x in range(cfg['num_players'] // 4):
-            # choose team1. team1 cannot contain any players that exist in round_games (games in this round)  # TODO
-            # possible_team1 = [x for x in all_possible_teams if ]
-            # possible_team1 = []
-            for x in all_possible_teams:
-                for y in round_games:
-                    # if x players not in round_games players, append to possible_team1
+            # choose team1. team1 cannot contain any players that exist in single_round_games (games in this round)  # TODO
+            possible_team1 = all_possible_teams.copy()
+            for x in possible_team1:
+                for y in single_round_games:
+                    # if x players not in single_round_games players, allow in possible_team1
+                    # x is Team, y is Game
                     if x.p1 in y.t1 or x.p2 in y.t1 or x.p1 in y.t2 or x.p2 in y.t2:
-                        possible_team1.remove(x)
-            team1 = choice(possible_team1)
+                        try:
+                            possible_team1.remove(x)
+                        except:
+                            pass
+            try:
+                team1 = choice(possible_team1)
+            except:
+                continue
+            possible_team1.remove(team1)
             all_possible_teams.remove(team1)
-            # team 2 cannot have any players that exist in round_games (games in this round) or team1  #TODO
+
+            # team 2 cannot have any players that exist in single_round_games (games in this round) or team1  #TODO
             possible_team2 = [x for x in possible_team1 if x.p1 not in team1 and x.p2 not in team1]
             # choose team2
-            team2 = choice(possible_team2)
+            try:
+                team2 = choice(possible_team2)
+            except:
+                continue
+            possible_team1.remove(team2)
             all_possible_teams.remove(team2)
-            # create game
-            temp_game = Game(team1, team2)
-            #add to round
-            round_games.append(temp_game)
+
+            #create game, add to round
+            single_round_games.append(Game(team1, team2))
             #decrement counter
             cfg['num_rounds'] = cfg['num_rounds'] - 1
-        tourney_rounds.append(round_games)
+        # if len(single_round_games) == (cfg['num_players'] // 4):
+        if len(single_round_games) > 0:
+            tourney_rounds.append(single_round_games)
 
     # list of game objects
     all_possible_games = []
@@ -117,7 +127,7 @@ def create_tourny():
             removed_teams.append(team_1)
             all_possible_teams.remove(team_1)
             #add to round
-            round_games.append()
+            single_round_games.append()
 
 
 
@@ -142,26 +152,26 @@ def create_tourny():
     # TODO: add capability to demand certain games before generation starts by placing info in yaml
     rounds = []  # each round is list of games. rounds is a list of these lists
     while (cfg['num_rounds'] and len(all_possible_games)):
-        round_games = all_possible_games.copy()
-        shuffle(round_games)
+        single_round_games = all_possible_games.copy()
+        shuffle(single_round_games)
         round = []  # list of games
         for i in range(cfg['num_players'] // 4):  # numbers of games in each round is num_players / 4
             try:
-                tempgame = round_games[0]
+                tempgame = single_round_games[0]
                 # remove tempgame from all_games, remove all games with those teams
                 all_possible_games.remove(tempgame)
                 all_possible_games = [x for x in all_possible_games if tempgame.t1 not in x and tempgame.t2 not in x]
-                # remove tempgame from round_games, remove all game with those players
-                round_games.remove(tempgame)
-                round_games = [x for x in round_games
+                # remove tempgame from single_round_games, remove all game with those players
+                single_round_games.remove(tempgame)
+                single_round_games = [x for x in single_round_games
                                if tempgame.t1.p1 not in x.t1 and tempgame.t1.p1 not in x.t2 and
                                tempgame.t1.p2 not in x.t1 and tempgame.t1.p2 not in x.t2 and
                                tempgame.t2.p1 not in x.t1 and tempgame.t2.p1 not in x.t2 and
                                tempgame.t2.p2 not in x.t1 and tempgame.t2.p2 not in x.t2]
                 round.append(tempgame)
             except IndexError:
-                print("IndexError. allposgames has {} items. round_games has {} items.".format(len(all_possible_games),
-                                                                                               len(round_games)))
+                print("IndexError. allposgames has {} items. single_round_games has {} items.".format(len(all_possible_games),
+                                                                                               len(single_round_games)))
         cfg['num_rounds'] -= 1
         rounds.append(round)
 
