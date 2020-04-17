@@ -63,88 +63,33 @@ def create_tourny():
 
     tourney_rounds = []
     while len(all_possible_teams) > 1:
+        # create one round and append to tourney
         single_round_games = []
         for x in range(cfg['num_players'] // 4):
-            # choose team1. team1 cannot contain any players that exist in single_round_games (games in this round)  # TODO
-            possible_team1 = all_possible_teams.copy()
-            for x in possible_team1:
-                for y in single_round_games:
-                    # if x players not in single_round_games players, allow in possible_team1
-                    # x is Team, y is Game
-                    if x.p1 in y.t1 or x.p2 in y.t1 or x.p1 in y.t2 or x.p2 in y.t2:
-                        try:
-                            possible_team1.remove(x)
-                        except:
-                            pass
-            try:
-                team1 = choice(possible_team1)
-            except:
-                continue
-            possible_team1.remove(team1)
-            all_possible_teams.remove(team1)
+            # runs for each game for a round. num of games per round = numplayers // 4
 
-            # team 2 cannot have any players that exist in single_round_games (games in this round) or team1  #TODO
-            possible_team2 = [x for x in possible_team1 if x.p1 not in team1 and x.p2 not in team1]
+            # choose team1.
+            # team1 cannot duplicate players within this round
+            # team1 cannot duplicate teams within this tourney
+            possible_team1 = []
+            for team in all_possible_teams:
+                if  True:#TODO team_players not in round and team not in tourney:
+                    possible_team1.append(team)
+            team1 = choice(possible_team1)
+
             # choose team2
-            try:
-                team2 = choice(possible_team2)
-            except:
-                continue
-            possible_team1.remove(team2)
-            all_possible_teams.remove(team2)
+            # team2 cannot duplicate players within this round (don't forget team1!)
+            # team2 cannot duplicate teams within this tourney
+            possible_team2 = []
+            for team in all_possible_teams:
+                if True: # TODO team_players not in round or team1, and team not in tourney
+                    possible_team2.append(team)
+            team2 = choice(possible_team2)
 
             #create game, add to round
             single_round_games.append(Game(team1, team2))
-            #decrement counter
-            cfg['num_rounds'] = cfg['num_rounds'] - 1
-        # if len(single_round_games) == (cfg['num_players'] // 4):
-        if len(single_round_games) > 0:
-            tourney_rounds.append(single_round_games)
 
-    # list of game objects
-    all_possible_games = []
-    for x in all_possible_teams:
-        for y in all_possible_teams:
-            try:
-                if Game(x, y) not in all_possible_games:
-                    all_possible_games.append(Game(x, y))
-            except(ValueError):
-                pass  # same players on opposite teams not possible
-    print("Number of possible games: {}\n".format(str(len(all_possible_games))))
-    # print(*all_possible_games, sep='\n')
-
-    removed_teams = []  # used to track removals
-    while(cfg['num_rounds'] and len(all_possible_teams)):
-        while (cfg['num_players'] // 4):
-            # choose a random team
-            team_1 = choice(all_possible_teams)
-            # temp remove other teams with duplicate players
-            temp_teams = all_possible_teams.copy()
-            temp_teams = [x for x in all_possible_teams if team_1.p1 not in x and team_1.p2 not in x]
-            # choose other team, create game.
-            # restore temp removals
-            # remove that team from all_teams
-            removed_teams.append(team_1)
-            all_possible_teams.remove(team_1)
-            #add to round
-            single_round_games.append()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        tourney_rounds.append(single_round_games)
 
 
     # randomly create rounds of games
