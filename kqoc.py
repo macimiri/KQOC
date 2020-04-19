@@ -80,19 +80,21 @@ class Team():
 
 
 def team_players_duplicate_in_round(team1, round):
+    val = False
     for game in round:
         for tm in game:
             if team1.p1 in tm or team1.p2 in tm:
-                return True
-    return False
+                val = True
+    return val
 
 
 def team_duplicate_in_tourney(team, tourney):
+    val = False
     for round in tourney:
         for game in round:
             if team in game:
-                return True
-    return False
+                val = True
+    return val
 
 
 def create_tourny():
@@ -122,25 +124,36 @@ def create_tourny():
             # team1 cannot duplicate players within this round
             # team1 cannot duplicate teams within this tourney
             possible_team1 = []
+            team1 = None
             for team in all_possible_teams:
                 if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team, tourney_rounds):
                     possible_team1.append(team)
-            team1 = choice(possible_team1)
+            try:
+                team1 = choice(possible_team1)
+            except:
+                pass
 
             # choose team2
             # team2 cannot duplicate players within this round (don't forget team1!)
             # team2 cannot duplicate teams within this tourney
             possible_team2 = []
+            team2 = None
             for team in all_possible_teams:
                 if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team, tourney_rounds) and team.p1 not in team1 and team.p2 not in team1:  # TODO team_players not in round or team1, and team not in tourney
                     possible_team2.append(team)
-            team2 = choice(possible_team2)
+            try:
+                team2 = choice(possible_team2)
+            except:
+                pass
 
             # create game, add to round
-            single_round_games.append(Game(team1, team2))
+            if team1 is not None and team2 is not None:
+                single_round_games.append(Game(team1, team2))
 
-        tourney_rounds.append(single_round_games)
+        if len(single_round_games) == (cfg['num_players'] // 4):
+            tourney_rounds.append(single_round_games)
         cfg['num_rounds'] -= 1
+    print('done')
 
     # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
     # TODO: add capability to demand certain games before generation starts by placing info in yaml
