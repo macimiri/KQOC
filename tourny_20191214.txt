@@ -1,0 +1,30 @@
+KQOC Tournament Generator
+
+round 1:
+(P01, P05) vs (P04, P07): 
+(P02, P08) vs (P03, P06): 
+
+round 2:
+(P01, P08) vs (P03, P07): 
+(P02, P06) vs (P04, P05): 
+
+round 3:
+(P01, P04) vs (P05, P07): 
+(P02, P03) vs (P06, P08): 
+
+round 4:
+(P02, P04) vs (P03, P08): 
+(P01, P07) vs (P05, P06): 
+
+round 5:
+(P03, P04) vs (P05, P08): 
+(P01, P06) vs (P02, P07): 
+
+round 6:
+(P02, P05) vs (P04, P08): 
+(P01, P03) vs (P06, P07): 
+
+round 7:
+(P01, P02) vs (P07, P08): 
+(P03, P05) vs (P04, P06): 
+

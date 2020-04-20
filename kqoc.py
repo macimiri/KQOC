@@ -1,19 +1,21 @@
 from itertools import combinations
 from random import shuffle
+from random import choice
 import yaml
 import datetime
 
 
-class Game():
+class Game:
     def __init__(self, t1, t2):
         if t1.p1 in t2 or t1.p2 in t2:
             raise ValueError("can't have a game with same person on both teams")
         else:
             self.t1 = t1
             self.t2 = t2
+            self.__i = 0
 
+    # item is a team
     def __contains__(self, item):
-        # item is a team
         return self.t1 == item or self.t2 == item
 
     def __str__(self):
@@ -22,12 +24,27 @@ class Game():
     def __eq__(self, other):
         return self.t1 in other and self.t2 in other
 
+    def __iter__(self):
+        return self
 
-class Team():
+    def __next__(self):
+        if self.__i == 0:
+            self.__i = 1
+            return self.t1
+        elif self.__i == 1:
+            self.__i = 2
+            return self.t2
+        else:
+            self.__i = 0
+            raise StopIteration
+
+
+class Team:
     # no need for duplicate player error checking. combinations() won't give duplicate player team. ex P01 P01
     def __init__(self, p1, p2):
         self.p1 = p1
         self.p2 = p2
+        self.__i = 0
 
     # overrides the "x in y" phrase! :)
     # check player in team. "item" is a player (int)
@@ -38,10 +55,52 @@ class Team():
         return "(P{:02}, P{:02})".format(self.p1, self.p2)
 
     def __eq__(self, other):
+        """
+        :param other: a Team object to compare against
+        :return: True if players are identical
+        """
         return self.p1 in other and self.p2 in other
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.__i == 0:
+            self.__i = 1
+            return self.p1
+        elif self.__i == 1:
+            self.__i = 2
+            return self.p2
+        else:
+            self.__i = 0
+            raise StopIteration
+
+
+def team_players_duplicate_in_round(team1, round):
+    val = False
+    for game in round:
+        for tm in game:
+            if team1.p1 in tm or team1.p2 in tm:
+                val = True
+    return val
+
+
+def team_duplicate_in_tourney(team, tourney):
+    val = False
+    for round in tourney:
+        for game in round:
+            if team in game:
+                val = True
+    return val
 
 
 def create_tourny():
+    """
+        read in the yaml, output tournament brackets
+    """
+    # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
+    # TODO: add capability to demand certain games before generation starts by placing info in yaml
+
     with open("kqoc.yaml", 'r') as yml:
         cfg = yaml.load(yml, Loader=yaml.FullLoader)
 
@@ -53,56 +112,60 @@ def create_tourny():
     all_possible_teams = [Team(x, y) for x, y in combinations(players, 2)]
     print("Number of possible teams: " + str(len(all_possible_teams)))
 
-    # list of game objects
-    all_possible_games = []
-    for x in all_possible_teams:
-        for y in all_possible_teams:
-            try:
-                if Game(x, y) not in all_possible_games:
-                    all_possible_games.append(Game(x, y))
-            except(ValueError):
-                pass  # same players on opposite teams not possible
-    print("Number of possible games: {}\n".format(str(len(all_possible_games))))
-    # print(*all_possible_games, sep='\n')
+    tourney_rounds = []
+    while cfg['num_rounds'] > 0:
+        # create one round and append to tourney
+        single_round_games = []
+        for x in range(cfg['num_players'] // 4):
+            # runs for each game for a round. num of games per round = numplayers // 4
 
-    # randomly create rounds of games
-    # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
-    # TODO: add capability to demand certain games before generation starts by placing info in yaml
-    rounds = []  # each round is list of games. rounds is a list of these lists
-    while (cfg['num_rounds'] and len(all_possible_games)):
-        round_games = all_possible_games.copy()
-        shuffle(round_games)
-        round = []  # list of games
-        for i in range(cfg['num_players'] // 4):  # numbers of games in each round is num_players / 4
+            # choose team1.
+            # team1 cannot duplicate players within this round
+            # team1 cannot duplicate teams within this tourney
+            possible_team1 = []
+            team1 = None
+            for team in all_possible_teams:
+                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team,
+                                                                                                                   tourney_rounds):
+                    possible_team1.append(team)
             try:
-                tempgame = round_games[0]
-                # remove tempgame from all_games, remove all games with those teams
-                all_possible_games.remove(tempgame)
-                all_possible_games = [x for x in all_possible_games if tempgame.t1 not in x and tempgame.t2 not in x]
-                # remove tempgame from round_games, remove all game with those players
-                round_games.remove(tempgame)
-                round_games = [x for x in round_games
-                               if tempgame.t1.p1 not in x.t1 and tempgame.t1.p1 not in x.t2 and
-                               tempgame.t1.p2 not in x.t1 and tempgame.t1.p2 not in x.t2 and
-                               tempgame.t2.p1 not in x.t1 and tempgame.t2.p1 not in x.t2 and
-                               tempgame.t2.p2 not in x.t1 and tempgame.t2.p2 not in x.t2]
-                round.append(tempgame)
-            except IndexError:
-                print("IndexError. allposgames has {} items. round_games has {} items.".format(len(all_possible_games),
-                                                                                               len(round_games)))
+                team1 = choice(possible_team1)
+            except:
+                pass
+
+            # choose team2
+            # team2 cannot duplicate players within this round (don't forget team1!)
+            # team2 cannot duplicate teams within this tourney
+            possible_team2 = []
+            team2 = None
+            for team in all_possible_teams:
+                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team,
+                                                                                                                   tourney_rounds) and team.p1 not in team1 and team.p2 not in team1:
+                    possible_team2.append(team)
+            try:
+                team2 = choice(possible_team2)
+            except:
+                pass
+
+            # create game, add to round
+            if team1 is not None and team2 is not None:
+                single_round_games.append(Game(team1, team2))
+
+        if len(single_round_games) == (cfg['num_players'] // 4):
+            tourney_rounds.append(single_round_games)
         cfg['num_rounds'] -= 1
-        rounds.append(round)
+    return tourney_rounds
+
+
+if __name__ == "__main__":
+    tourney = create_tourny()
 
     with open('tourny_{}.txt'.format(datetime.datetime.now().strftime('%Y%m%d')), 'w') as file:
         file.write('KQOC Tournament Generator\n\n')
         i = 1
-        for round in rounds:
+        for vb_round in tourney:
             file.write("round {}:\n".format(i))
-            for game in round:
+            for game in vb_round:
                 file.write(str(game) + ': \n')
             i += 1
             file.write('\n')
-
-
-if __name__ == "__main__":
-    create_tourny()
