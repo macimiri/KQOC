@@ -5,7 +5,7 @@ import yaml
 import datetime
 
 
-class Game():
+class Game:
     def __init__(self, t1, t2):
         if t1.p1 in t2 or t1.p2 in t2:
             raise ValueError("can't have a game with same person on both teams")
@@ -14,8 +14,8 @@ class Game():
             self.t2 = t2
             self.__i = 0
 
+    # item is a team
     def __contains__(self, item):
-        # item is a team
         return self.t1 == item or self.t2 == item
 
     def __str__(self):
@@ -38,10 +38,8 @@ class Game():
             self.__i = 0
             raise StopIteration
 
-class Team():
-    p2 = ...  # type: int
-    p1 = ...  # type: int
 
+class Team:
     # no need for duplicate player error checking. combinations() won't give duplicate player team. ex P01 P01
     def __init__(self, p1, p2):
         self.p1 = p1
@@ -58,7 +56,6 @@ class Team():
 
     def __eq__(self, other):
         """
-
         :param other: a Team object to compare against
         :return: True if players are identical
         """
@@ -101,6 +98,8 @@ def create_tourny():
     """
         read in the yaml, output tournament brackets
     """
+    # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
+    # TODO: add capability to demand certain games before generation starts by placing info in yaml
 
     with open("kqoc.yaml", 'r') as yml:
         cfg = yaml.load(yml, Loader=yaml.FullLoader)
@@ -126,7 +125,8 @@ def create_tourny():
             possible_team1 = []
             team1 = None
             for team in all_possible_teams:
-                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team, tourney_rounds):
+                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team,
+                                                                                                                   tourney_rounds):
                     possible_team1.append(team)
             try:
                 team1 = choice(possible_team1)
@@ -139,7 +139,8 @@ def create_tourny():
             possible_team2 = []
             team2 = None
             for team in all_possible_teams:
-                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team, tourney_rounds) and team.p1 not in team1 and team.p2 not in team1:  # TODO team_players not in round or team1, and team not in tourney
+                if not team_players_duplicate_in_round(team, single_round_games) and not team_duplicate_in_tourney(team,
+                                                                                                                   tourney_rounds) and team.p1 not in team1 and team.p2 not in team1:
                     possible_team2.append(team)
             try:
                 team2 = choice(possible_team2)
@@ -153,21 +154,18 @@ def create_tourny():
         if len(single_round_games) == (cfg['num_players'] // 4):
             tourney_rounds.append(single_round_games)
         cfg['num_rounds'] -= 1
-    print('done')
+    return tourney_rounds
 
-    # TODO: make it so the same person can't be left out of multiple games before everyone else has been left out
-    # TODO: add capability to demand certain games before generation starts by placing info in yaml
+
+if __name__ == "__main__":
+    tourney = create_tourny()
 
     with open('tourny_{}.txt'.format(datetime.datetime.now().strftime('%Y%m%d')), 'w') as file:
         file.write('KQOC Tournament Generator\n\n')
         i = 1
-        for round in tourney_rounds:
+        for vb_round in tourney:
             file.write("round {}:\n".format(i))
-            for game in round:
+            for game in vb_round:
                 file.write(str(game) + ': \n')
             i += 1
             file.write('\n')
-
-
-if __name__ == "__main__":
-    create_tourny()
