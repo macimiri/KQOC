@@ -1,6 +1,5 @@
 from itertools import combinations
-from random import shuffle
-from random import choice
+from random import choice, random
 import yaml
 import datetime
 
@@ -163,13 +162,14 @@ def create_tourney2(cfg):
     print("Number of players: {}".format(cfg['num_players']))
 
     # list of all possible teams
-    all_possible_games = {x:0 for x in combinations(players, 4)}
-    print("Number of possible games: " + str(len(all_possible_teams)))
+    games_dict = {x:0 for x in combinations(players, 4)}
+    print("Number possible games" + str(len(games_dict)))
     # these are the lines that give a dictionary random sorted, then organized by number of games.
     # the games listed first have been played the least (hopefully, not at all)
-    # sorted_games_list = sorted(games_dict, key=lambda x: random())
-    # sorted_games_list = sorted(sorted_games_list, key=lambda x: games_dict[x])
-    # sorted_games_dict = {x: games_dict[x] for x in sorted_games_list}
+    sorted_games_list = sorted(games_dict, key=lambda x: random())
+    sorted_games_list = sorted(sorted_games_list, key=lambda x: games_dict[x])
+    games_dict = {x: games_dict[x] for x in sorted_games_list}
+    pass
 
 
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     with open("kqoc.yaml", 'r') as yml:
         cfg2 = yaml.load(yml, Loader=yaml.FullLoader)
 
-    tourney2 = create_tourney2(cfg2)
+    # tourney2 = create_tourney2(cfg2)
 
     tourney = create_tourny()
 
